@@ -8,15 +8,9 @@
     const dispatch = createEventDispatcher();
 
     let processing = false;
-    let paymentMethod = "apple_pay"; // Default payment method
 
     function goBack() {
         dispatch("navigate", { page: "booking", data: service });
-    }
-
-    function selectPaymentMethod(method) {
-        paymentMethod = method;
-        console.log("Payment method selected:", method);
     }
 
     function pay() {
@@ -39,7 +33,6 @@
             amount: service.price,
             service: service.title,
             serviceId: service.id,
-            paymentMethod: paymentMethod,
             booking: {
                 date: booking.date,
                 time: booking.time,
@@ -126,49 +119,6 @@
         <h1>{service.price}$</h1>
     </div>
 
-    <div class="section-title">طريقة الدفع</div>
-
-    <div class="payment-methods">
-        <div
-            class="method {paymentMethod === 'apple_pay' ? 'active' : ''}"
-            on:click={() => selectPaymentMethod("apple_pay")}
-        >
-            <div class="method-icon">
-                <i class="fa-brands fa-apple"></i>
-            </div>
-            <span>Apple Pay</span>
-            {#if paymentMethod === "apple_pay"}
-                <i class="fa-solid fa-check-circle check"></i>
-            {/if}
-        </div>
-
-        <div
-            class="method {paymentMethod === 'credit_card' ? 'active' : ''}"
-            on:click={() => selectPaymentMethod("credit_card")}
-        >
-            <div class="method-icon">
-                <i class="fa-solid fa-credit-card"></i>
-            </div>
-            <span>بطاقة ائتمان</span>
-            {#if paymentMethod === "credit_card"}
-                <i class="fa-solid fa-check-circle check"></i>
-            {/if}
-        </div>
-
-        <div
-            class="method {paymentMethod === 'cash' ? 'active' : ''}"
-            on:click={() => selectPaymentMethod("cash")}
-        >
-            <div class="method-icon">
-                <i class="fa-solid fa-money-bill-wave"></i>
-            </div>
-            <span>دفع نقدي</span>
-            {#if paymentMethod === "cash"}
-                <i class="fa-solid fa-check-circle check"></i>
-            {/if}
-        </div>
-    </div>
-
     <div class="summary">
         <h3>ملخص الطلب</h3>
         <div class="item">
@@ -196,7 +146,7 @@
             <i class="fa-solid fa-spinner fa-spin"></i>
             <span>جاري المعالجة...</span>
         {:else}
-            <span>دفع {service.price}$</span>
+            <span>دفع إلكتروني {service.price}$</span>
             <i class="fa-solid fa-lock"></i>
         {/if}
     </button>
@@ -250,52 +200,6 @@
     .amount-card h1 {
         font-size: 36px;
         margin-top: 8px;
-    }
-
-    .section-title {
-        font-size: 16px;
-        margin-bottom: 16px;
-        color: var(--text-muted);
-    }
-
-    .payment-methods {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-bottom: 30px;
-    }
-
-    .method {
-        display: flex;
-        align-items: center;
-        padding: 16px;
-        background: var(--card-bg);
-        border: 1px solid var(--glass-border);
-        border-radius: 16px;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .method.active {
-        border-color: var(--primary);
-        background: rgba(79, 70, 229, 0.1);
-    }
-
-    .method-icon {
-        width: 40px;
-        height: 40px;
-        background: var(--dark-bg);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: 16px;
-        font-size: 20px;
-    }
-
-    .check {
-        margin-right: auto;
-        color: var(--primary);
     }
 
     .summary {
