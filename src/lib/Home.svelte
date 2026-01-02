@@ -40,7 +40,14 @@
             {#each services as service}
                 <div class="card" on:click={() => selectService(service)}>
                     <div class="card-image">
-                        <img src={service.image} alt={service.title} />
+                        <img
+                            src={service.image}
+                            alt={service.title}
+                            on:error={(e) => (e.target.style.display = "none")}
+                        />
+                        <div class="image-fallback">
+                            <i class={`fa-solid ${service.icon}`}></i>
+                        </div>
                         <div class="price-tag">{service.price}$</div>
                     </div>
                     <div class="card-content">
@@ -185,7 +192,7 @@
     }
 
     .card-image {
-        height: 120px;
+        height: 160px;
         width: 100%;
         position: relative;
     }
@@ -194,20 +201,55 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        position: relative;
+        z-index: 1;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .image-fallback {
+        position: absolute;
+        inset: 0;
+        background: var(--dark-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        color: var(--primary-light);
+        opacity: 0.5;
+    }
+
+    .card:hover .card-image img {
+        transform: scale(1.1);
+    }
+
+    /* Gradient overlay to make images look more premium and integrated */
+    .card-image::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.8) 0%,
+            transparent 100%
+        );
+        z-index: 1;
     }
 
     .price-tag {
         position: absolute;
-        bottom: 8px;
-        left: 8px; /* RTL flip: actually left implies end in visuals usually, but right for numbers? */
-        /* Since RTL, left is left. Let's put it on the right? RTL auto flips? No, absolute positioning is physical. */
-        right: 8px;
-        background: rgba(0, 0, 0, 0.7);
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 12px;
-        backdrop-filter: blur(4px);
-        font-weight: 600;
+        bottom: 12px;
+        right: 12px;
+        background: var(--primary);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 800;
+        z-index: 3;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
     .card-content {

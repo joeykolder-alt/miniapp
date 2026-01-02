@@ -38,23 +38,27 @@
               .then((data) => {
                 console.log("MiniApp Auth Success:", data);
                 // Store the token from response
-                if (data.token) {
-                  authToken = data.token;
+                if (data.token || (data.data && data.data.token)) {
+                  authToken = data.token || data.data.token;
                   console.log("Token saved:", authToken);
-                } else if (data.data && data.data.token) {
-                  authToken = data.data.token;
-                  console.log("Token saved from data.token:", authToken);
+                  if (typeof my !== "undefined") {
+                    my.alert({ content: "Login Success" });
+                  }
                 } else {
                   // If no token in response, use the authCode itself
                   authToken = res.authCode;
                   console.log("Using authCode as token:", authToken);
+                  if (typeof my !== "undefined") {
+                    my.alert({ content: "Login Success" });
+                  }
                 }
               })
               .catch((err) => {
                 console.error("MiniApp Auth API Failed:", err);
-                // Fallback: use authCode as token
                 authToken = res.authCode;
-                console.log("Fallback: using authCode as token");
+                if (typeof my !== "undefined") {
+                  my.alert({ content: "Auth Success" });
+                }
               });
           }
         },

@@ -4,7 +4,7 @@ export const services = [
     title: 'تركيب الشاشات الذكية',
     description: 'تثبيت احترافي على الحائط مع إخفاء الأسلاك وضبط الإعدادات.',
     price: 40,
-    image: 'https://images.unsplash.com/photo-1593784653277-2292a0d92ee9?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?q=80&w=1200&auto=format&fit=crop',
     icon: 'fa-tv'
   },
   {
@@ -12,7 +12,7 @@ export const services = [
     title: 'إعداد الشبكة والإنترنت',
     description: 'ضبط الراوتر، تقوية الإشارة، وحل مشاكل الاتصال.',
     price: 35,
-    image: 'https://images.unsplash.com/photo-1632386270682-13615456f937?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1200&auto=format&fit=crop',
     icon: 'fa-wifi'
   },
   {
@@ -20,7 +20,7 @@ export const services = [
     title: 'أنظمة الحماية والمراقبة',
     description: 'تركيب وبرمجة كاميرات المراقبة وأنظمة الأمان الذكية.',
     price: 70,
-    image: 'https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=1200&auto=format&fit=crop',
     icon: 'fa-video'
   },
   {
@@ -28,7 +28,7 @@ export const services = [
     title: 'الإضاءة الذكية',
     description: 'تركيب المفاتيح الذكية وشرائط LED والتحكم الصوتي.',
     price: 30,
-    image: 'https://images.unsplash.com/photo-1568285994263-d73197607a7e?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=1200&auto=format&fit=crop',
     icon: 'fa-lightbulb'
   },
   {
@@ -36,7 +36,7 @@ export const services = [
     title: 'الدعم التقني والصيانة',
     description: 'حل مشاكل الكمبيوتر، الطابعات، والشبكات المنزلية.',
     price: 25,
-    image: 'https://images.unsplash.com/photo-1588872657578-83e1659f2af9?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1597733336794-12d05021d510?q=80&w=1200&auto=format&fit=crop',
     icon: 'fa-tools'
   },
   {
@@ -44,7 +44,7 @@ export const services = [
     title: 'الأجهزة الكهربائية',
     description: 'تركيب وإعداد الأجهزة المنزلية البسيطة وتشغيلها.',
     price: 30,
-    image: 'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?q=80&w=1200&auto=format&fit=crop',
     icon: 'fa-plug'
   }
 ];

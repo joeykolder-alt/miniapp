@@ -79,6 +79,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        filter: brightness(1.1); /* Subtle brightness boost for clarity */
     }
 
     .overlay {
@@ -86,8 +87,9 @@
         inset: 0;
         background: linear-gradient(
             to bottom,
-            rgba(0, 0, 0, 0.2),
-            var(--dark-bg)
+            rgba(0, 0, 0, 0.3) 0%,
+            transparent 40%,
+            var(--dark-bg) 100%
         );
     }
 
