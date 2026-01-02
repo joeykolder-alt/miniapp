@@ -8,9 +8,15 @@
     const dispatch = createEventDispatcher();
 
     let processing = false;
+    let paymentMethod = "apple_pay"; // Default payment method
 
     function goBack() {
         dispatch("navigate", { page: "booking", data: service });
+    }
+
+    function selectPaymentMethod(method) {
+        paymentMethod = method;
+        console.log("Payment method selected:", method);
     }
 
     function pay() {
@@ -33,6 +39,7 @@
             amount: service.price,
             service: service.title,
             serviceId: service.id,
+            paymentMethod: paymentMethod,
             booking: {
                 date: booking.date,
                 time: booking.time,
@@ -122,26 +129,43 @@
     <div class="section-title">طريقة الدفع</div>
 
     <div class="payment-methods">
-        <div class="method active">
+        <div
+            class="method {paymentMethod === 'apple_pay' ? 'active' : ''}"
+            on:click={() => selectPaymentMethod("apple_pay")}
+        >
             <div class="method-icon">
                 <i class="fa-brands fa-apple"></i>
             </div>
             <span>Apple Pay</span>
-            <i class="fa-solid fa-check-circle check"></i>
+            {#if paymentMethod === "apple_pay"}
+                <i class="fa-solid fa-check-circle check"></i>
+            {/if}
         </div>
 
-        <div class="method">
+        <div
+            class="method {paymentMethod === 'credit_card' ? 'active' : ''}"
+            on:click={() => selectPaymentMethod("credit_card")}
+        >
             <div class="method-icon">
                 <i class="fa-solid fa-credit-card"></i>
             </div>
             <span>بطاقة ائتمان</span>
+            {#if paymentMethod === "credit_card"}
+                <i class="fa-solid fa-check-circle check"></i>
+            {/if}
         </div>
 
-        <div class="method">
+        <div
+            class="method {paymentMethod === 'cash' ? 'active' : ''}"
+            on:click={() => selectPaymentMethod("cash")}
+        >
             <div class="method-icon">
                 <i class="fa-solid fa-money-bill-wave"></i>
             </div>
             <span>دفع نقدي</span>
+            {#if paymentMethod === "cash"}
+                <i class="fa-solid fa-check-circle check"></i>
+            {/if}
         </div>
     </div>
 
