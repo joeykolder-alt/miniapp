@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFix Test</title>
+    <script src="https://cdn.marmot-cloud.com/npm/hylid-bridge/2.10.0/index.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .info p {
+            margin: 8px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .info strong {
+            color: #333;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔧 SmartFix Test</h1>
+
+        <div class="info">
+            <p><strong>Auth Code:</strong> <span id="authCode">-</span></p>
+            <p><strong>Token:</strong> <span id="token">-</span></p>
+        </div>
+
+        <div id="status"></div>
+
+        <button class="btn btn-primary" onclick="authenticate()">
+            🔐 تسجيل الدخول (Login)
+        </button>
+
+        <button class="btn btn-success" onclick="pay()" id="payBtn" disabled>
+            💳 الدفع (Pay)
+        </button>
+    </div>
+
+    <script>
+        var authCode = '';
+        var token = '';
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status ' + type;
+            statusDiv.textContent = message;
+            console.log('[STATUS]', type.toUpperCase(), message);
+        }
+
+        function authenticate() {
+            showStatus('جاري المصادقة...', 'info');
+            console.log('[AUTH] Starting authentication...');
+
+            if (typeof my === 'undefined') {
+                showStatus('خطأ: بيئة MiniApp غير متوفرة', 'error');
+                console.error('[AUTH] my object is undefined');
+                return;
+            }
+
+            my.getAuthCode({
+                scopes: ['auth_base', 'USER_ID'],
+                success: (res) => {
+                    console.log('[AUTH] Auth code received:', res);
+                    authCode = res.authCode;
+                    document.getElementById('authCode').textContent = authCode;
+                    showStatus('تم الحصول على Auth Code', 'success');
+
+                    // Send to backend
+                    console.log('[AUTH] Sending to backend...');
+                    fetch('https://its.mouamle.space/api/auth-with-superQi', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            token: authCode
+                        })
+                    })
+                        .then(res => {
+                            console.log('[AUTH] Response status:', res.status);
+                            return res.json();
+                        })
+                        .then(data => {
+                            console.log('[AUTH] Response data:', data);
+                            token = data.token || authCode;
+                            document.getElementById('token').textContent = token;
+                            document.getElementById('payBtn').disabled = false;
+                            showStatus('تم تسجيل الدخول بنجاح ✓', 'success');
+
+                            if (typeof my !== 'undefined') {
+                                my.alert({
+                                    content: "تم تسجيل الدخول بنجاح",
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            console.error('[AUTH] Error:', err);
+                            showStatus('خطأ: ' + err.message, 'error');
+
+                            if (typeof my !== 'undefined') {
+                                my.alert({
+                                    content: "خطأ في المصادقة: " + err.message,
+                                });
+                            }
+                        });
+                },
+                fail: (err) => {
+                    console.error('[AUTH] getAuthCode failed:', err);
+                    showStatus('فشل الحصول على Auth Code', 'error');
+
+                    if (err.authErrorScopes) {
+                        console.log('[AUTH] Error scopes:', err.authErrorScopes);
+                    }
+
+                    if (typeof my !== 'undefined') {
+                        my.alert({
+                            content: "فشل تسجيل الدخول",
+                        });
+                    }
+                },
+            });
+        }
+
+        function pay() {
+            if (!token) {
+                showStatus('خطأ: لا يوجد توكن. قم بتسجيل الدخول أولاً', 'error');
+                return;
+            }
+
+            showStatus('جاري معالجة الدفع...', 'info');
+            console.log('[PAY] Starting payment with token:', token);
+
+            fetch('https://its.mouamle.space/api/payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify({
+                    amount: 50,
+                    service: 'Test Service',
+                    serviceId: 999
+                })
+            })
+                .then(res => {
+                    console.log('[PAY] Response status:', res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('[PAY] Response data:', data);
+
+                    if (!data.url) {
+                        throw new Error('No payment URL received');
+                    }
+
+                    showStatus('تم الحصول على رابط الدفع', 'success');
+
+                    if (typeof my !== 'undefined') {
+                        console.log('[PAY] Calling my.tradePay with URL:', data.url);
+                        my.tradePay({
+                            paymentUrl: data.url,
+                            success: (res) => {
+                                console.log('[PAY] Payment successful:', res);
+                                showStatus('تم الدفع بنجاح ✓', 'success');
+                                my.alert({
+                                    content: "تم الدفع بنجاح",
+                                });
+                            },
+                            fail: (err) => {
+                                console.error('[PAY] Payment failed:', err);
+                                showStatus('فشل الدفع', 'error');
+                                my.alert({
+                                    content: "فشل الدفع",
+                                });
+                            }
+                        });
+                    } else {
+                        showStatus('Mock: Payment URL received', 'success');
+                    }
+                })
+                .catch(err => {
+                    console.error('[PAY] Error:', err);
+                    showStatus('خطأ: ' + err.message, 'error');
+
+                    if (typeof my !== 'undefined') {
+                        my.alert({
+                            content: "خطأ في الدفع: " + err.message,
+                        });
+                    }
+                });
+        }
+
+        // Check environment on load
+        window.addEventListener('load', () => {
+            if (typeof my === 'undefined') {
+                showStatus('تحذير: بيئة MiniApp غير متوفرة (اختبار محلي)', 'error');
+            } else {
+                showStatus('جاهز - اضغط تسجيل الدخول للبدء', 'info');
+            }
+        });
+    </script>
+</body>
+
+</html>
