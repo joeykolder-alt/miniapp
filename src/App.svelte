@@ -25,30 +25,44 @@
       my.getAuthCode({
         scopes: ["auth_base", "USER_ID"],
         success: (res) => {
+          console.log("Auth code received:", res.authCode);
           // Send res.authCode to backend as token
           if (res.authCode) {
-            // Using my.request for native handling if available
-            my.request({
-              url: "https://its.mouamle.space/api/auth-with-superQi",
+            // Using fetch for better compatibility
+            fetch("https://its.mouamle.space/api/auth-with-superQi", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              data: {
-                token: res.authCode,
-              },
-              success: (response) => {
-                console.log("MiniApp Auth Success:", response);
-                if (response.data && response.data.token) {
-                  authToken = response.data.token;
+              body: JSON.stringify({ token: res.authCode }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                console.log("MiniApp Auth Success:", data);
+                // Store the token from response
+                if (data.token) {
+                  authToken = data.token;
+                  console.log("Token saved:", authToken);
+                } else if (data.data && data.data.token) {
+                  authToken = data.data.token;
+                  console.log("Token saved from data.token:", authToken);
+                } else {
+                  // If no token in response, use the authCode itself
+                  authToken = res.authCode;
+                  console.log("Using authCode as token:", authToken);
                 }
-              },
-              fail: (err) => {
+              })
+              .catch((err) => {
                 console.error("MiniApp Auth API Failed:", err);
-              },
-            });
+                // Fallback: use authCode as token
+                authToken = res.authCode;
+                console.log("Fallback: using authCode as token");
+              });
           }
         },
         fail: (err) => {
           console.log("Authorization failed:", err);
+          if (err.authErrorScopes) {
+            console.log("Error scopes:", err.authErrorScopes);
+          }
         },
       });
     }
