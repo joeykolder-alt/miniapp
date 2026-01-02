@@ -15,41 +15,70 @@
 
     function pay() {
         if (!token) {
-            alert("No auth token found, please restart the app.");
+            if (typeof my !== "undefined") {
+                my.alert({
+                    content: "لا يوجد توكن مصادقة، الرجاء إعادة تشغيل التطبيق",
+                });
+            } else {
+                alert("No auth token found, please restart the app.");
+            }
             return;
         }
 
+        console.log("Starting payment with token:", token);
         processing = true;
 
-        // Use user provided snippet
+        // Prepare payment data
+        const paymentData = {
+            amount: service.price,
+            service: service.title,
+            serviceId: service.id,
+            booking: {
+                date: booking.date,
+                time: booking.time,
+                address: booking.address,
+            },
+        };
+
+        console.log("Payment data:", paymentData);
+
         fetch("https://its.mouamle.space/api/payment", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: token,
             },
-            // Assuming we might need to send amount or service info? user's snippet didn't have body.
-            // I'll leave body empty as per snippet, or maybe user forgot?
-            // Usually payment needs amount. I'll stick to snippet exactly but maybe add body if needed?
-            // User said "add this to the code", implying the snippet is complete or illustrative.
-            // I will use it exactly but safe guard the 'my' call.
+            body: JSON.stringify(paymentData),
         })
-            .then((res) => res.json())
+            .then((res) => {
+                console.log("Payment API response status:", res.status);
+                return res.json();
+            })
             .then((data) => {
+                console.log("Payment API response data:", data);
+
+                if (!data.url) {
+                    throw new Error("No payment URL received from server");
+                }
+
                 if (typeof my !== "undefined") {
+                    console.log("Calling my.tradePay with URL:", data.url);
                     my.tradePay({
                         paymentUrl: data.url,
                         success: (res) => {
+                            console.log("Payment successful:", res);
                             my.alert({
-                                content: "Payment successful",
+                                content: "تم الدفع بنجاح",
                             });
                             processing = false;
                             dispatch("navigate", { page: "success" });
                         },
                         fail: (err) => {
+                            console.error("Payment failed:", err);
                             my.alert({
                                 content:
-                                    "Payment failed: " + JSON.stringify(err),
+                                    "فشل الدفع: " +
+                                    (err.errorMessage || JSON.stringify(err)),
                             });
                             processing = false;
                         },
@@ -63,13 +92,13 @@
                 }
             })
             .catch((err) => {
-                console.error(err);
+                console.error("Payment error:", err);
                 if (typeof my !== "undefined") {
                     my.alert({
-                        content: "Payment init failed",
+                        content: "فشل بدء عملية الدفع: " + err.message,
                     });
                 } else {
-                    alert("Payment init failed");
+                    alert("Payment init failed: " + err.message);
                 }
                 processing = false;
             });
@@ -246,7 +275,7 @@
     }
 
     .summary {
-        background: var(--card-bg); /* Use consistent background */
+        background: var(--card-bg);
         padding: 20px;
         border-radius: 16px;
         border: 1px solid var(--glass-border);
