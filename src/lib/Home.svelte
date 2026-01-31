@@ -1,61 +1,103 @@
 <script>
     import { createEventDispatcher } from "svelte";
     import { services } from "./services";
-    import { fly } from "svelte/transition";
+    import { fly, fade } from "svelte/transition";
 
     const dispatch = createEventDispatcher();
 
     function selectService(service) {
         dispatch("navigate", { page: "detail", data: service });
     }
+
+    let searchQuery = "";
+    $: filteredServices = services.filter(s => s.title.includes(searchQuery));
 </script>
 
-<div class="page" in:fly={{ y: 20, duration: 400 }}>
+<div class="page" in:fade={{ duration: 400 }}>
     <header class="header">
-        <div class="user-welcome">
-            <span class="greeting">مرحباً بك 👋</span>
-            <h1 class="brand">SmartFix</h1>
+        <div class="top-nav">
+            <div class="user-info">
+                <div class="avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="welcome-text">
+                    <span class="greeting">أهلاً بك 👋</span>
+                    <h2 class="user-name">محمد أحمد</h2>
+                </div>
+            </div>
+            <button class="notification-btn">
+                <i class="fa-solid fa-bell"></i>
+                <span class="dot"></span>
+            </button>
         </div>
-        <div class="search-bar">
-            <i class="fa-solid fa-search"></i>
-            <input type="text" placeholder="ما هي الخدمة التي تبحث عنها؟" />
+
+        <div class="search-container">
+            <div class="search-box glass-card">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input 
+                    type="text" 
+                    placeholder="ما هي الخدمة التي تحتاجها اليوم؟" 
+                    bind:value={searchQuery}
+                />
+            </div>
         </div>
     </header>
 
-    <section class="banner">
-        <div class="banner-content">
-            <h2>خدمات منزلك<br />بين يديك</h2>
-            <button class="btn-banner">اطلب الآن</button>
+    <section class="hero-section" in:fly={{ y: 20, delay: 200, duration: 600 }}>
+        <div class="hero-card glass-card">
+            <div class="hero-content">
+                <span class="badge">عرض محدود</span>
+                <h3>خصم 30% على <br/> أول حجز لك!</h3>
+                <p>استمتع بأفضل الخدمات المنزلية بأقل الأسعار</p>
+                <button class="hero-btn">اكتشف العروض</button>
+            </div>
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=1000&auto=format&fit=crop" alt="Repair" />
+            </div>
         </div>
-        <div class="banner-overlay"></div>
     </section>
 
-    <section class="categories">
+    <section class="categories-section">
         <div class="section-header">
-            <h3>الخدمات المتاحة</h3>
-            <span class="see-all">الكل</span>
+            <h3 class="section-title">التصنيفات</h3>
+            <button class="see-all">الكل</button>
+        </div>
+        <div class="category-grid">
+            {#each ["صيانة", "تنظيف", "كهرباء", "سباكة"] as cat, i}
+                <div class="category-item glass-card" in:fly={{ x: 20, delay: 300 + (i * 100) }}>
+                    <span>{cat}</span>
+                </div>
+            {/each}
+        </div>
+    </section>
+
+    <section class="services-section">
+        <div class="section-header">
+            <h3 class="section-title">الخدمات الأكثر طلباً</h3>
         </div>
 
-        <div class="grid">
-            {#each services as service}
-                <div class="card" on:click={() => selectService(service)}>
-                    <div class="card-image">
-                        <img
-                            src={service.image}
-                            alt={service.title}
-                            on:error={(e) => (e.target.style.display = "none")}
-                        />
-                        <div class="image-fallback">
-                            <i class={`fa-solid ${service.icon}`}></i>
-                        </div>
-                        <div class="price-tag">{service.price}$</div>
+        <div class="services-grid">
+            {#each filteredServices as service, i}
+                <div 
+                    class="service-card glass-card" 
+                    on:click={() => selectService(service)}
+                    in:fly={{ y: 20, delay: 400 + (i * 100) }}
+                >
+                    <div class="image-wrapper">
+                        <img src={service.image} alt={service.title} />
+                        <div class="price-badge">{service.price}$</div>
                     </div>
-                    <div class="card-content">
-                        <div class="icon-box">
-                            <i class={`fa-solid ${service.icon}`}></i>
+                    <div class="card-info">
+                        <div class="title-row">
+                            <h4>{service.title}</h4>
+                            <div class="rating">
+                                <i class="fa-solid fa-star"></i>
+                                <span>4.8</span>
+                            </div>
                         </div>
-                        <h4>{service.title}</h4>
-                        <!-- <p>{service.description}</p> -->
+                        <div class="meta-row">
+                            <span class="time"><i class="fa-regular fa-clock"></i> 45-60 دقيقة</span>
+                        </div>
                     </div>
                 </div>
             {/each}
@@ -65,95 +107,160 @@
 
 <style>
     .page {
-        padding: 20px;
+        padding: 24px;
+        padding-top: env(safe-area-inset-top, 24px);
     }
 
     .header {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
         margin-bottom: 24px;
     }
 
-    .user-welcome .greeting {
+    .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .avatar {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+
+    .greeting {
         font-size: 14px;
         color: var(--text-muted);
     }
 
-    .brand {
-        font-size: 28px;
-        background: linear-gradient(
-            to right,
-            var(--primary-light),
-            var(--primary)
-        );
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+    .user-name {
+        font-size: 18px;
+        font-weight: 700;
     }
 
-    .search-bar {
+    .notification-btn {
+        width: 48px;
+        height: 48px;
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: 14px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         position: relative;
-        background: var(--card-bg);
-        border-radius: 12px;
-        padding: 12px 16px;
+    }
+
+    .dot {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 8px;
+        height: 8px;
+        background: #ef4444;
+        border-radius: 50%;
+        border: 2px solid var(--bg-dark);
+    }
+
+    .search-box {
         display: flex;
         align-items: center;
         gap: 12px;
-        border: 1px solid var(--glass-border);
+        padding: 16px;
+        border-radius: var(--radius-sm);
     }
 
-    .search-bar i {
+    .search-box i {
         color: var(--text-muted);
     }
 
-    .search-bar input {
+    .search-box input {
         background: transparent;
         border: none;
         color: white;
         width: 100%;
         font-family: inherit;
+        font-size: 15px;
         outline: none;
     }
 
-    .banner {
-        position: relative;
-        height: 160px;
-        border-radius: 20px;
-        background: url("https://images.unsplash.com/photo-1581092921461-eab62e97a783?q=80&w=1000&auto=format&fit=crop")
-            center/cover;
+    .hero-section {
+        margin-bottom: 32px;
+    }
+
+    .hero-card {
+        height: 180px;
         overflow: hidden;
-        margin-bottom: 30px;
         display: flex;
-        align-items: center;
-        padding: 20px;
-    }
-
-    .banner-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(90deg, rgba(0, 0, 0, 0.8), transparent);
-        z-index: 1;
-    }
-
-    .banner-content {
         position: relative;
+    }
+
+    .hero-content {
+        padding: 20px;
+        flex: 1;
         z-index: 2;
+        background: linear-gradient(90deg, var(--bg-dark) 40%, transparent);
     }
 
-    .banner-content h2 {
-        font-size: 22px;
-        line-height: 1.3;
-        margin-bottom: 12px;
+    .badge {
+        background: var(--accent);
         color: white;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        display: inline-block;
     }
 
-    .btn-banner {
+    .hero-content h3 {
+        font-size: 20px;
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+
+    .hero-content p {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+    }
+
+    .hero-btn {
         background: var(--primary);
         color: white;
         padding: 8px 16px;
         border-radius: 8px;
-        font-size: 14px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .hero-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+
+    .hero-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.6;
     }
 
     .section-header {
@@ -163,113 +270,85 @@
         margin-bottom: 16px;
     }
 
-    .section-header h3 {
-        font-size: 18px;
-    }
-
     .see-all {
-        color: var(--primary-light);
+        color: var(--primary);
         font-size: 14px;
+        font-weight: 600;
+        background: transparent;
     }
 
-    .grid {
+    .category-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 32px;
     }
 
-    .card {
-        background: var(--card-bg);
-        border-radius: 16px;
+    .category-item {
+        padding: 12px 4px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .services-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .service-card {
         overflow: hidden;
-        border: 1px solid var(--glass-border);
-        cursor: pointer;
-        transition: transform 0.2s;
     }
 
-    .card:active {
-        transform: scale(0.96);
-    }
-
-    .card-image {
-        height: 160px;
-        width: 100%;
+    .image-wrapper {
+        height: 180px;
         position: relative;
     }
 
-    .card-image img {
+    .image-wrapper img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        position: relative;
-        z-index: 1;
-        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .image-fallback {
+    .price-badge {
         position: absolute;
-        inset: 0;
-        background: var(--dark-bg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 40px;
-        color: var(--primary-light);
-        opacity: 0.5;
-    }
-
-    .card:hover .card-image img {
-        transform: scale(1.1);
-    }
-
-    /* Gradient overlay to make images look more premium and integrated */
-    .card-image::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 50%;
-        background: linear-gradient(
-            to top,
-            rgba(0, 0, 0, 0.8) 0%,
-            transparent 100%
-        );
-        z-index: 1;
-    }
-
-    .price-tag {
-        position: absolute;
-        bottom: 12px;
-        right: 12px;
+        bottom: 16px;
+        right: 16px;
         background: var(--primary);
         color: white;
-        padding: 4px 12px;
-        border-radius: 8px;
-        font-size: 14px;
+        padding: 6px 16px;
+        border-radius: 12px;
         font-weight: 800;
-        z-index: 3;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
     }
 
-    .card-content {
-        padding: 12px;
+    .card-info {
+        padding: 16px;
     }
 
-    .icon-box {
-        width: 32px;
-        height: 32px;
-        background: var(--dark-bg);
-        border-radius: 8px;
+    .title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .title-row h4 {
+        font-size: 17px;
+    }
+
+    .rating {
         display: flex;
         align-items: center;
-        justify-content: center;
-        margin-bottom: 8px;
-        color: var(--primary-light);
+        gap: 4px;
+        color: var(--accent);
+        font-size: 14px;
     }
 
-    .card h4 {
-        font-size: 14px;
-        margin-bottom: 4px;
+    .meta-row {
+        color: var(--text-muted);
+        font-size: 13px;
     }
 </style>

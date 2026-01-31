@@ -1,6 +1,6 @@
 <script>
     import { createEventDispatcher } from "svelte";
-    import { fly } from "svelte/transition";
+    import { fly, fade } from "svelte/transition";
 
     export let service;
     const dispatch = createEventDispatcher();
@@ -20,7 +20,11 @@
                 data: { service, booking: { date, time, address } },
             });
         } else {
-            alert("الرجاء تعبئة جميع الحقول");
+            if (typeof my !== "undefined") {
+                my.alert({ content: "الرجاء كمال جميع البيانات" });
+            } else {
+                alert("الرجاء تعبئة جميع الحقول");
+            }
         }
     }
 
@@ -31,12 +35,10 @@
                 success(res) {
                     my.hideLoading();
                     console.log(res);
-                    // Simple formatting commonly used or just coordinates if address not provided in res
-                    // res usually has latitude, longitude. Some envs might return address if configured.
-                    // For now, let's just put lat, long or look for address prop if available in standard mini-app schema
-                    // The user snippet used 'formatLocation'. I will implement a basic one.
-                    address = `Location: ${res.latitude}, ${res.longitude}`;
-                    if (res.address) address = res.address; // Use address if available
+                    address =
+                        res.address ||
+                        `الموقع: ${res.latitude}, ${res.longitude}`;
+                    my.alert({ content: "تم تحديد الموقع بنجاح" });
                 },
                 fail() {
                     my.hideLoading();
@@ -44,8 +46,7 @@
                 },
             });
         } else {
-            // Web Mock
-            address = "Riyadh, Digital City (Mock)";
+            address = "الرياض، حي الملقا (تجريبي)";
         }
     }
 
@@ -54,7 +55,6 @@
             my.scan({
                 type: "qr",
                 success: (res) => {
-                    // Use scanned QR code data as address or parse it
                     if (res.code) {
                         address = res.code;
                         my.alert({ title: "تم المسح بنجاح" });
@@ -65,53 +65,58 @@
                 },
             });
         } else {
-            // Web Mock
-            address = "QR: Sample Address (Mock)";
+            address = "QR_12345_ADDRESS_MOCK";
         }
     }
+
+    const availableTimes = [
+        "09:00",
+        "10:30",
+        "12:00",
+        "14:00",
+        "16:00",
+        "18:00",
+    ];
 </script>
 
-<div class="page" in:fly={{ x: 50, duration: 300 }}>
+<div class="page" in:fade={{ duration: 300 }}>
     <header class="header">
-        <button class="btn-icon" on:click={goBack}>
-            <i class="fa-solid fa-arrow-right"></i>
+        <button class="back-btn glass-card" on:click={goBack}>
+            <i class="fa-solid fa-chevron-right"></i>
         </button>
-        <h2>حجز الموعد</h2>
-        <div style="width: 40px;"></div>
+        <h2 class="section-title">حجز الموعد</h2>
+        <div style="width: 44px"></div>
     </header>
 
-    <div class="summary-card">
-        <div class="row">
-            <span>الخدمة:</span>
-            <span class="val">{service.title}</span>
+    <div class="booking-container">
+        <!-- Service Brief -->
+        <div class="service-brief glass-card">
+            <img src={service.image} alt={service.title} class="mini-img" />
+            <div class="brief-info">
+                <h4>{service.title}</h4>
+                <span class="price">{service.price}$</span>
+            </div>
+            <div class="status-dot"></div>
         </div>
-        <div class="row">
-            <span>السعر:</span>
-            <span class="val price">{service.price}$</span>
-        </div>
-    </div>
 
-    <form class="form" on:submit|preventDefault={goToPayment}>
-        <div class="form-group">
-            <label>تاريخ الزيارة</label>
-            <div class="input-wrap">
-                <i class="fa-solid fa-calendar"></i>
-                <input
-                    type="date"
-                    bind:value={date}
-                    required
-                    placeholder="dd/mm/yyyy"
-                />
+        <!-- Date Selection -->
+        <div class="form-section">
+            <label class="label">اختر تاريخ الزيارة</label>
+            <div class="input-wrapper glass-card">
+                <i class="fa-solid fa-calendar-day"></i>
+                <input type="date" bind:value={date} required />
             </div>
         </div>
 
-        <div class="form-group">
-            <label>الوقت المفضل</label>
-            <div class="grid-time">
-                {#each ["09:00", "11:00", "13:00", "15:00", "17:00"] as t}
+        <!-- Time Selection -->
+        <div class="form-section">
+            <label class="label">اختر الوقت المفضل</label>
+            <div class="time-grid">
+                {#each availableTimes as t}
                     <button
-                        type="button"
-                        class="time-slot {time === t ? 'active' : ''}"
+                        class="time-chip glass-card {time === t
+                            ? 'active'
+                            : ''}"
                         on:click={() => (time = t)}
                     >
                         {t}
@@ -120,182 +125,195 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <label>العنوان</label>
-            <div class="input-wrap">
-                <i class="fa-solid fa-map-marker-alt"></i>
-                <input
-                    type="text"
+        <!-- Address Selection -->
+        <div class="form-section">
+            <label class="label">عنوان الخدمة</label>
+            <div class="input-wrapper glass-card address-box">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <textarea
                     bind:value={address}
-                    placeholder="اسم الشارع، رقم المنزل..."
-                    required
-                />
+                    placeholder="أدخل العنوان أو استخدم تحديد الموقع..."
+                    rows="3"
+                ></textarea>
             </div>
-            <button type="button" class="btn-location" on:click={getLocation}>
-                <i class="fa-solid fa-location-crosshairs"></i>
-                <span>استخدام موقعي الحالي</span>
-            </button>
-            <button type="button" class="btn-location" on:click={scanQR}>
-                <i class="fa-solid fa-qrcode"></i>
-                <span>مسح رمز QR</span>
-            </button>
+
+            <div class="location-tools">
+                <button class="tool-btn glass-card" on:click={getLocation}>
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                    <span>موقعي الحالي</span>
+                </button>
+                <button class="tool-btn glass-card" on:click={scanQR}>
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>مسح QR</span>
+                </button>
+            </div>
         </div>
+    </div>
 
-        <div class="spacer"></div>
-
-        <button type="submit" class="btn-primary">
-            <span>متابعة للدفع</span>
+    <div class="footer-action">
+        <button
+            class="btn-primary"
+            on:click={goToPayment}
+            disabled={!date || !time || !address}
+        >
+            <span>متابعة الدفع</span>
             <i class="fa-solid fa-credit-card"></i>
         </button>
-    </form>
+    </div>
 </div>
 
 <style>
     .page {
-        padding: 20px;
+        padding: 24px;
+        background: var(--bg-deep);
         min-height: 100vh;
+        padding-bottom: 120px;
     }
 
     .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 24px;
+        margin-bottom: 32px;
     }
 
-    .btn-icon {
-        width: 40px;
-        height: 40px;
-        background: var(--card-bg);
-        border-radius: 12px;
-        color: var(--text-muted);
+    .back-btn {
+        width: 44px;
+        height: 44px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
-        border: 1px solid var(--glass-border);
-    }
-
-    .summary-card {
-        background: var(--card-bg);
-        padding: 20px;
-        border-radius: 16px;
-        border: 1px solid var(--glass-border);
-        margin-bottom: 30px;
-    }
-
-    .row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        color: var(--text-muted);
-        font-size: 14px;
-    }
-
-    .row:last-child {
-        margin-bottom: 0;
-        padding-top: 8px;
-        border-top: 1px solid var(--glass-border);
-    }
-
-    .val {
+        border-radius: 12px;
         color: white;
-        font-weight: 500;
     }
 
-    .val.price {
-        color: var(--primary-light);
-        font-weight: 700;
+    .booking-container {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
     }
 
-    .form-group {
-        margin-bottom: 24px;
-    }
-
-    label {
-        display: block;
-        margin-bottom: 8px;
-        color: var(--text-muted);
-        font-size: 14px;
-    }
-
-    .input-wrap {
+    .service-brief {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px;
         position: relative;
     }
 
-    .input-wrap i {
-        position: absolute;
-        right: 16px; /* RTL */
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-muted);
-    }
-
-    input {
-        width: 100%;
-        background: var(--card-bg);
-        border: 1px solid var(--glass-border);
-        padding: 14px 44px 14px 16px; /* padding-right 44px for icon */
+    .mini-img {
+        width: 60px;
+        height: 60px;
         border-radius: 12px;
-        color: white;
+        object-fit: cover;
+    }
+
+    .brief-info h4 {
         font-size: 16px;
-        outline: none;
-        transition: 0.2s;
+        margin-bottom: 4px;
+    }
+
+    .brief-info .price {
+        color: var(--primary-light);
+        font-weight: 700;
+        font-family: "Outfit", sans-serif;
+    }
+
+    .status-dot {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 10px;
+        height: 10px;
+        background: var(--secondary);
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--secondary);
+    }
+
+    .form-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-muted);
+        padding-right: 4px;
+    }
+
+    .input-wrapper {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .input-wrapper i {
+        color: var(--primary);
+        font-size: 18px;
+    }
+
+    .input-wrapper input,
+    .input-wrapper textarea {
+        background: transparent;
+        border: none;
+        color: white;
+        width: 100%;
         font-family: inherit;
+        font-size: 15px;
+        outline: none;
     }
 
-    input:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
-    }
-
-    .grid-time {
+    .time-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
+        gap: 12px;
     }
 
-    .time-slot {
-        background: var(--card-bg);
-        border: 1px solid var(--glass-border);
-        padding: 10px;
-        border-radius: 8px;
-        color: var(--text-muted);
-        transition: 0.2s;
+    .time-chip {
+        padding: 14px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 700;
+        font-family: "Outfit", sans-serif;
     }
 
-    .time-slot.active {
+    .time-chip.active {
         background: var(--primary);
+        border-color: var(--primary-light);
         color: white;
-        border-color: var(--primary);
     }
 
-    .btn-location {
-        margin-top: 12px;
-        width: 100%;
-        background: transparent;
-        border: 1px dashed var(--glass-border);
-        padding: 12px;
-        border-radius: 8px;
-        color: var(--text-muted);
+    .location-tools {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .tool-btn {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        transition: 0.2s;
-        font-size: 14px;
+        padding: 12px;
+        font-size: 13px;
+        font-weight: 600;
     }
 
-    .btn-location:hover {
-        border-color: var(--primary);
-        color: var(--primary);
+    .tool-btn i {
+        color: var(--primary-light);
     }
 
-    .btn-location:active {
-        transform: scale(0.98);
-    }
-
-    .spacer {
-        height: 40px;
+    .footer-action {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 24px;
+        background: linear-gradient(to top, var(--bg-deep) 80%, transparent);
+        z-index: 10;
     }
 </style>

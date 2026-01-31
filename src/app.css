@@ -1,22 +1,23 @@
 :root {
-  --primary: #4f46e5;
-  --primary-dark: #4338ca;
-  --primary-light: #818cf8;
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-light: #a5b4fc;
   --secondary: #10b981;
   --accent: #f59e0b;
-  --dark-bg: #0f172a;
-  --card-bg: #1e293b;
+  --bg-deep: #020617;
+  --bg-dark: #0f172a;
+  --bg-card: rgba(30, 41, 59, 0.5);
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
-  --glass: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-  --radius: 16px;
-  --font-main: 'Inter', sans-serif;
+  --glass: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --shadow-premium: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap'); /* For Arabic */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
 
 * {
   box-sizing: border-box;
@@ -26,16 +27,24 @@
 }
 
 body {
-  font-family: 'Cairo', 'Inter', sans-serif; /* Priority to Cairo for Arabic */
-  background-color: var(--dark-bg);
+  font-family: 'Cairo', sans-serif;
+  background-color: var(--bg-deep);
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+  background-attachment: fixed;
   color: var(--text-main);
   line-height: 1.6;
-  direction: rtl; /* RTL for Arabic */
+  direction: rtl;
+  min-height: 100vh;
 }
 
-a {
-  text-decoration: none;
-  color: inherit;
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  position: relative;
+  background: transparent;
 }
 
 button {
@@ -43,65 +52,74 @@ button {
   cursor: pointer;
   border: none;
   outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Utilities */
-.container {
-  max-width: 480px; /* Mobile width */
-  margin: 0 auto;
-  min-height: 100vh;
-  background-color: var(--dark-bg);
-  position: relative;
-  overflow-x: hidden;
-  padding-bottom: 80px; /* Space for bottom nav if needed */
-}
-
-.glass-panel {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-premium);
 }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
-  padding: 14px 24px;
-  border-radius: 12px;
+  padding: 16px 24px;
+  border-radius: var(--radius-sm);
   font-weight: 700;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+  gap: 12px;
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
 }
 
 .btn-primary:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
 }
 
-.title {
-  font-size: 24px;
+.btn-primary:disabled {
+  opacity: 0.6;
+  filter: grayscale(0.5);
+  cursor: not-allowed;
+}
+
+.section-title {
+  font-size: 20px;
   font-weight: 700;
-  color: #fff;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+  color: white;
 }
 
-.subtitle {
-  font-size: 14px;
-  color: var(--text-muted);
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-card);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
 }
 
 /* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes pulse-soft {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.02); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+.animate-pulse {
+  animation: pulse-soft 2s infinite ease-in-out;
 }
